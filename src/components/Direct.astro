@@ -1,0 +1,74 @@
+---
+import Icon from './Icon.astro';
+import { useT, type Lang } from '../i18n/ui';
+interface Props { lang: Lang }
+const t = useT(Astro.props.lang);
+const d = t.direct;
+---
+
+<section id="reservar-directo" class="section section--dark direct" aria-labelledby="direct-title">
+  <div class="glow direct__glow flicker" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="direct__top">
+      <div class="stack" style="--gap:1.5rem" data-reveal>
+        <p class="label on-dark">{d.label}</p>
+        <h2 id="direct-title" class="h2 direct__title">{d.titleA}<br /><em>{d.titleEm}</em></h2>
+      </div>
+      <ul role="list" class="benefits">
+        {d.items.map(([title, text], i) => (
+          <li data-reveal style={`--i:${i}`}>
+            <h3 class="serif">{title}</h3>
+            <p class="muted">{text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <h3 class="label on-dark steps__label">{d.howLabel}</h3>
+    <ol role="list" class="steps">
+      {d.steps.map(([title, text], i) => (
+        <li data-reveal style={`--i:${i}`}>
+          <span class="steps__n serif" aria-hidden="true">{i + 1}</span>
+          <div>
+            <h4>{title}</h4>
+            <p class="muted">{text}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+    <a class="btn btn--primary" href="#disponibilidad">{d.cta}<Icon name="arrow-right" class="btn__icon btn__icon--right" /></a>
+  </div>
+</section>
+
+<style>
+  .direct__glow { background: radial-gradient(50% 60% at 95% 100%, rgb(var(--ember) / 0.35), transparent 70%); }
+  .on-dark { color: var(--muted); }
+  .direct__top { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(2.5rem, 7vw, 6rem); position: relative; }
+  .direct__title { font-size: clamp(2.875rem, 2rem + 3vw, 4.5rem); line-height: 0.98; }
+  .benefits li { padding-block: 1.75rem; border-top: 1px solid rgb(243 231 215 / 0.2); }
+  .benefits h3 { font-size: 2rem; line-height: 1.1; margin-bottom: 0.5rem; transition: color 0.4s, transform 0.6s var(--ease-out); }
+  .benefits li:hover h3 { color: var(--accent); transform: translateX(0.375rem); }
+  .steps__label { margin-top: clamp(4rem, 8vw, 6rem); margin-bottom: 2.5rem; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 3rem; counter-reset: s; }
+  .steps li { display: grid; gap: 1.25rem; }
+  .steps__n {
+    display: grid; place-items: center; width: 3.25rem; height: 3.25rem; border-radius: 50%;
+    border: 1px solid rgb(243 231 215 / 0.5); font-size: 1.625rem; position: relative;
+    transition: background-color 0.4s, color 0.4s, border-color 0.4s, box-shadow 0.5s;
+  }
+  .steps li:hover .steps__n { background: var(--primary); color: var(--on-primary); border-color: var(--primary); box-shadow: 0 0 1.625rem rgb(var(--ember) / 0.6); }
+  .steps li:not(:last-child) .steps__n::after {
+    content: ''; position: absolute; left: calc(100% + 1rem); top: 50%;
+    width: calc((min(100vw - 2 * var(--gutter), var(--wrap)) - 4rem) / 3 - 4.25rem); height: 1px; background: rgb(243 231 215 / 0.25);
+  }
+  .steps h4 { font-size: 1.1875rem; font-weight: 600; margin-bottom: 0.375rem; }
+  @media (max-width: 860px) {
+    .direct__top { grid-template-columns: 1fr; }
+    .benefits h3 { font-size: 1.625rem; }
+    .steps { grid-template-columns: 1fr; gap: 1.375rem; }
+    .steps li { grid-template-columns: 2.75rem 1fr; gap: 1rem; align-items: start; }
+    .steps__n { width: 2.75rem; height: 2.75rem; font-size: 1.375rem; }
+    .steps li:not(:last-child) .steps__n::after { display: none; }
+    .direct .btn { width: 100%; }
+  }
+</style>

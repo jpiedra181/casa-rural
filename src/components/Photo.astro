@@ -1,0 +1,75 @@
+---
+/**
+ * Foto optimizada (AVIF/WebP + srcset) a partir de src/assets/images/<name>.jpg.
+ * Si la imagen aún no existe, muestra un marcador para que el build no falle.
+ */
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  name: string;
+  alt: string;
+  variant?: 'arch' | 'card' | 'none';
+  sizes?: string;
+  widths?: number[];
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'auto';
+  class?: string;
+  pendingLabel?: string;
+  /** Zoom lento y luz cálida al pasar el ratón */
+  live?: boolean;
+  /** Aparece al hacer scroll; el número escalona la entrada */
+  reveal?: boolean | number;
+}
+
+const {
+  name,
+  alt,
+  variant = 'card',
+  sizes = '100vw',
+  widths = [400, 800, 1200, 1600],
+  loading = 'lazy',
+  fetchpriority = 'auto',
+  class: className = '',
+  pendingLabel = 'Foto pendiente',
+  live = false,
+  reveal,
+} = Astro.props;
+const revealAttrs = reveal === undefined || reveal === false ? {} : { 'data-reveal': '', style: `--i:${reveal === true ? 0 : reveal}` };
+
+const images = import.meta.glob<{ default: ImageMetadata }>('../assets/images/*.{jpg,jpeg,png,webp}', {
+  eager: true,
+});
+const entry = Object.entries(images).find(([path]) => path.split('/').pop()?.replace(/\.\w+$/, '') === name);
+const src = entry?.[1].default;
+// Tamaños pedidos que no superan el original + el original como versión más grande.
+const usable = src ? [...new Set([...widths.filter((w) => w < src.width), src.width])] : [];
+
+// En pantallas grandes la página escala (ver html { font-size } en global.css): un ancho fijo
+// de N px pasa a medir N/16 rem ≈ N/16 × (6,667px + 0,5556vw). Se añade esa regla a `sizes`.
+const fixed = sizes.match(/(?:^|,\s*)(\d+)px\s*$/);
+const finalSizes = fixed
+  ? `(min-width: 1680px) calc(${Math.round((+fixed[1] / 16) * 6.667)}px + ${((+fixed[1] / 16) * 0.5556).toFixed(2)}vw), ${sizes}`
+  : sizes;
+---
+
+<div class:list={['photo', variant !== 'none' && `photo--${variant}`, live && 'photo--live', className]} {...revealAttrs}>
+  {
+    src ? (
+      <Picture
+        src={src}
+        alt={alt}
+        formats={['avif', 'webp']}
+        widths={usable}
+        sizes={finalSizes}
+        loading={loading}
+        fetchpriority={fetchpriority}
+        decoding="async"
+      />
+    ) : (
+      <span class="photo__pending" role="img" aria-label={alt}>
+        {pendingLabel} · {name}
+      </span>
+    )
+  }
+</div>

@@ -1,0 +1,45 @@
+---
+import Photo from './Photo.astro';
+import { useT, type Lang } from '../i18n/ui';
+interface Props { lang: Lang }
+const t = useT(Astro.props.lang);
+const e = t.around;
+---
+
+<section class="section" aria-labelledby="around-title">
+  <div class="wrap">
+    <div class="stack" style="--gap:1.5rem" data-reveal>
+      <p class="label">{e.label}</p>
+      <h2 id="around-title" class="h2">{e.titleA}<br /><em>{e.titleEm}</em></h2>
+    </div>
+    <ul role="list" class="places">
+      {e.items.map((p, i) => (
+        <li class="place" data-reveal style={`--i:${i}`}>
+          <Photo name={p.img} alt={p.alt} variant="arch" sizes="(max-width: 860px) 45vw, 282px" widths={[300, 480, 600]} pendingLabel={t.photoPending} live />
+          <p class="place__meta">
+            <span class="place__min serif" aria-hidden="true">{p.min}′</span>
+            <span>
+              <strong>{p.name}</strong>
+              <span class="muted"><span class="visually-hidden">{p.min} {e.minutes} </span>{e.byCar}</span>
+            </span>
+          </p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .places { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 3.5rem; }
+  .places :global(.photo) { aspect-ratio: 3 / 4; }
+  .place__meta { display: flex; align-items: center; gap: 0.875rem; margin-top: 1rem; }
+  .place__meta > span:last-child { display: grid; font-size: 0.9375rem; line-height: 1.3; }
+  .place__min { font-size: 3.25rem; line-height: 1; color: var(--accent); transition: transform 0.6s var(--ease-out), text-shadow 0.5s; }
+  .place:hover .place__min { transform: translateY(-4px); text-shadow: 0 0 1.5rem rgb(var(--ember) / 0.7); }
+  @media (max-width: 860px) {
+    .places { grid-template-columns: 1fr 1fr; gap: 1.5rem 1rem; margin-top: 2rem; }
+    .place__min { font-size: 2.25rem; }
+    .place__meta { gap: 0.5rem; align-items: flex-start; }
+    .place__meta > span:last-child { font-size: 0.8125rem; }
+  }
+</style>

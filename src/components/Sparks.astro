@@ -1,0 +1,62 @@
+---
+/** Chispas que suben desde el fuego. Decorativas: ocultas a lectores de pantalla y sin animación si se pide reducir movimiento. */
+interface Props { count?: number; seed?: number; area?: string }
+const { count = 36, seed = 7, area = '' } = Astro.props;
+let s = seed;
+const rnd = () => ((s = (s * 16807) % 2147483647), (s - 1) / 2147483646);
+const sparks = Array.from({ length: count }, () => ({
+  x: (rnd() * 100).toFixed(2),
+  size: (1.5 + rnd() * 3).toFixed(1),
+  dur: (6 + rnd() * 9).toFixed(1),
+  delay: (-rnd() * 15).toFixed(1),
+  drift: ((rnd() - 0.5) * 80).toFixed(0),
+  gold: rnd() < 0.5,
+  op: (0.4 + rnd() * 0.6).toFixed(2),
+  y: (20 + rnd() * 75).toFixed(1),
+}));
+---
+
+<div class="sparks" aria-hidden="true" style={area}>
+  {
+    sparks.map((p) => (
+      <span
+        class:list={['spark', p.gold && 'spark--gold']}
+        style={`--x:${p.x}%;--s:${p.size}px;--d:${p.dur}s;--delay:${p.delay}s;--drift:${p.drift}px;--o:${p.op};--y:${p.y}%`}
+      />
+    ))
+  }
+</div>
+
+<style>
+  .sparks {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .spark {
+    position: absolute;
+    bottom: -10px;
+    left: var(--x);
+    width: var(--s);
+    height: var(--s);
+    border-radius: 50%;
+    background: rgb(var(--ember));
+    box-shadow: 0 0 0.5rem 1px rgb(var(--ember) / 0.9);
+    opacity: 0;
+    animation: rise var(--d) linear var(--delay) infinite;
+  }
+  .spark--gold {
+    background: rgb(var(--gold));
+    box-shadow: 0 0 0.5rem 1px rgb(var(--gold) / 0.9);
+  }
+  @keyframes rise {
+    0% { transform: translate(0, 0); opacity: 0; }
+    10% { opacity: var(--o); }
+    70% { opacity: calc(var(--o) * 0.6); }
+    100% { transform: translate(var(--drift), -85vh); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spark { animation: none; opacity: calc(var(--o) * 0.6); bottom: auto; top: var(--y); }
+  }
+</style>

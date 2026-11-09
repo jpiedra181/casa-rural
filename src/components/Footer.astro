@@ -1,0 +1,29 @@
+---
+import { useT, type Lang } from '../i18n/ui';
+import { site } from '../data/site';
+interface Props { lang: Lang }
+const t = useT(Astro.props.lang);
+---
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <p class="footer__logo serif">La Casa <em>del Pinar</em></p>
+    <ul role="list" class="footer__links">
+      <li><a href="#">{t.footer.legal}</a></li>
+      <li><a href="#">{t.footer.privacy}</a></li>
+      <li><a href="#">{t.footer.accessibility}</a></li>
+    </ul>
+    <p class="muted">{t.footer.credit} <a href={site.author.url}>{site.author.name}</a></p>
+  </div>
+</footer>
+
+<style>
+  .footer { background: var(--dark); border-top: 1px solid rgb(255 255 255 / 0.12); font-size: 0.875rem; padding-block: 2rem; padding-bottom: calc(2rem + var(--sticky-space, 0px)); }
+  .footer__inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem 2rem; flex-wrap: wrap; }
+  .footer__logo { font-size: 1.5rem; }
+  .footer__logo em { color: var(--accent); }
+  .footer__links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+  .footer__links a { color: var(--muted); text-underline-offset: 0.25rem; }
+  .footer a:hover { color: var(--accent); }
+  @media (max-width: 860px) { .footer__inner { flex-direction: column; text-align: center; } .footer { --sticky-space: 4.5rem; } }
+</style>

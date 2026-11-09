@@ -1,0 +1,266 @@
+---
+import Photo from './Photo.astro';
+import Sparks from './Sparks.astro';
+import Icon from './Icon.astro';
+import { useT, type Lang } from '../i18n/ui';
+import { site, pricing } from '../data/site';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useT(lang);
+const guests = Array.from({ length: site.maxGuests }, (_, i) => i + 1);
+const saving = Math.round(pricing.platformFee * 100);
+const ring = t.hero.seal.ring.toLocaleUpperCase(lang).split('✦').map((s) => s.trim()).filter(Boolean);
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__media" aria-hidden="false">
+    <Photo name="hero" alt={t.hero.imgAlt} variant="none" sizes="max(100vw, clamp(1210px, 178vh - 200px, 1600px))" widths={[640, 960, 1280, 1600, 1920, 2560, 3840]} loading="eager" fetchpriority="high" class="hero__photo" pendingLabel={t.photoPending} />
+    <div class="glow hero__shade"></div>
+    <div class="glow hero__fire flicker"></div>
+    <Sparks count={40} seed={11} area="right:40%" />
+  </div>
+
+  <div class="hero__content wrap">
+    <div class="hero__top">
+      <h1 id="hero-title" class="display">
+        <span class="line" style="--l:0">{t.hero.titleA}</span> <span class="line" style="--l:1"><em>{t.hero.titleEm}</em> {t.hero.titleB}</span> <span class="line" style="--l:2">{t.hero.titleC}</span>
+      </h1>
+      <div class="hero__side">
+        <p class="chip"><span class="chip__dot" aria-hidden="true"></span>{t.hero.promise}</p>
+        <p class="hero__intro">{t.hero.intro}</p>
+        <div class="hero__actions">
+          <a class="btn btn--ghost" href="#por-dentro">{t.hero.secondary}<Icon name="arrow-down" class="btn__icon btn__icon--down" /></a>
+          <a class="seal" href="#reservar-directo" aria-label={t.hero.seal.label.replace('{n}', String(saving))}>
+            <span class="seal__spin" aria-hidden="true">
+              <svg class="seal__ring" viewBox="0 0 200 200" focusable="false">
+                <defs><path id="seal-path" d="M100,100 m-79,0 a79,79 0 1,1 158,0 a79,79 0 1,1 -158,0" /></defs>
+                <text><textPath href="#seal-path" textLength="494" lengthAdjust="spacing">{ring.map((part) => (<><tspan>{part}</tspan><tspan class="seal__star"> ✦ </tspan></>))}</textPath></text>
+              </svg>
+            </span>
+            <span class="seal__core" aria-hidden="true">
+              <span class="seal__num serif">−{saving}<span class="seal__pct">%</span></span>
+              <span class="seal__sub">{t.hero.seal.sub}</span>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <form class="widget" data-hero-form action="#disponibilidad" aria-label={t.hero.widgetLabel}>
+      <div class="widget__field">
+        <label for="hero-in">{t.hero.checkin}</label>
+        <input id="hero-in" name="checkin" type="date" required />
+      </div>
+      <div class="widget__field">
+        <label for="hero-out">{t.hero.checkout}</label>
+        <input id="hero-out" name="checkout" type="date" required />
+      </div>
+      <div class="widget__field">
+        <label for="hero-guests">{t.hero.guests}</label>
+        <select id="hero-guests" name="guests">
+          {guests.map((g) => <option value={g} selected={g === 8}>{g} {t.hero.people}</option>)}
+        </select>
+      </div>
+      <button class="btn btn--primary" type="submit">{t.hero.cta}<Icon name="arrow-right" class="btn__icon btn__icon--right" /></button>
+    </form>
+
+  </div>
+</section>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-hero-form]');
+  if (form) {
+    const inEl = form.querySelector<HTMLInputElement>('#hero-in')!;
+    const outEl = form.querySelector<HTMLInputElement>('#hero-out')!;
+    const iso = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+    const today = new Date();
+    inEl.min = iso(today);
+    outEl.min = iso(new Date(today.getTime() + 864e5));
+    inEl.addEventListener('change', () => {
+      if (!inEl.value) return;
+      const next = new Date(inEl.value + 'T12:00:00');
+      next.setDate(next.getDate() + 1);
+      outEl.min = iso(next);
+      if (outEl.value && outEl.value <= inEl.value) outEl.value = '';
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      window.dispatchEvent(new CustomEvent('booking:set', {
+        detail: { checkin: data.get('checkin'), checkout: data.get('checkout'), guests: Number(data.get('guests')) },
+      }));
+      const target = document.getElementById('disponibilidad');
+      target?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      document.getElementById('calendar-heading')?.focus({ preventScroll: true });
+    });
+  }
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    min-height: clamp(42.5rem, calc(100svh - 7rem), 62.5rem);
+    display: flex;
+    overflow: hidden;
+  }
+  .hero__media { position: absolute; inset: 0; z-index: -1; }
+  .hero__media :global(.hero__photo) { position: absolute; inset: 0; }
+  .hero__media :global(.hero__photo img) { width: 100%; height: 100%; object-fit: cover; object-position: 50% 70%; }
+  .hero__shade {
+    background: linear-gradient(180deg, rgb(13 9 6 / 0.92) 0%, rgb(13 9 6 / 0.55) 32%, rgb(13 9 6 / 0.1) 58%, rgb(13 9 6 / 0.6) 100%);
+  }
+  .hero__fire {
+    background:
+      radial-gradient(60% 55% at 18% 100%, rgb(var(--ember) / 0.4), rgb(var(--ember) / 0.12) 45%, transparent 70%),
+      radial-gradient(30% 35% at 88% 105%, rgb(var(--ember) / 0.22), transparent 70%);
+    mix-blend-mode: screen;
+  }
+  .hero__content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 3rem;
+    padding-block: clamp(2.25rem, 6vw, 5.5rem) clamp(1.5rem, 4vw, 3rem);
+  }
+  .hero__top {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: end;
+  }
+  .hero__side { display: grid; gap: 1.375rem; justify-items: start; max-width: 28.75rem; }
+  .hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; width: 100%; }
+  .display .line { display: block; white-space: nowrap; }
+  @media (max-width: 380px) { .display .line { white-space: normal; } }
+  .hero__intro { font-size: var(--fs-lead); color: var(--text); opacity: 0.9; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 0.625rem;
+    padding: 0.4375rem 1rem 0.4375rem 0.875rem; border-radius: var(--pill);
+    background: rgb(var(--ember) / 0.12); border: 1px solid rgb(var(--ember) / 0.45);
+    font-size: 0.8125rem; font-weight: 600;
+  }
+  .chip__dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0.625rem 2px rgb(var(--ember) / 0.9); }
+
+  .widget {
+    align-self: center;
+    display: flex; align-items: center; gap: 0;
+    padding: 0.5rem; border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid rgb(var(--ember) / 0.35);
+    box-shadow: 0 0.625rem 3.75rem rgb(var(--ember) / 0.28);
+  }
+  .widget__field { display: grid; gap: 2px; padding: 0.625rem 1.5rem; border-right: 1px solid var(--line); }
+  .widget__field label { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .widget__field input, .widget__field select {
+    background: transparent; border: 0; padding: 2px 0; font-size: 1.0625rem; font-weight: 500; min-width: 9.375rem; color-scheme: dark;
+  }
+  .widget__field select option { background: var(--surface); }
+  .widget .btn { margin-left: 0.5rem; }
+  @media (min-width: 981px) { .widget .btn { white-space: nowrap; } }
+
+  /* ---------- Sello: texto que gira alrededor de una brasa ---------- */
+  .seal {
+    --size: clamp(7.5rem, 1.5rem + 8vw, 9.5rem);
+    position: relative; flex-shrink: 0; margin-left: auto;
+    width: var(--size); aspect-ratio: 1; border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--text); text-decoration: none;
+    background: radial-gradient(circle, rgb(14 11 9 / 0.15) 38%, rgb(14 11 9 / 0.58) 100%);
+    -webkit-backdrop-filter: blur(0.4375rem) saturate(1.2);
+    backdrop-filter: blur(0.4375rem) saturate(1.2);
+    border: 1px solid rgb(var(--gold) / 0.26);
+    box-shadow: 0 1.5rem 3.75rem rgb(0 0 0 / 0.38);
+  }
+  .seal > * { grid-area: 1 / 1; }
+  .seal::before {
+    content: ''; position: absolute; inset: 19%; border-radius: 50%;
+    border: 1px dashed rgb(var(--gold) / 0.32);
+    transition: transform 1.2s var(--ease-out), border-color 0.6s;
+  }
+  .seal__spin { width: 100%; height: 100%; animation: seal-spin 32s linear infinite; }
+  .seal__ring { display: block; width: 100%; height: 100%; overflow: visible; transition: transform 1.6s var(--ease-out); }
+  .seal__ring text { font-family: var(--sans); font-size: 12.5px; font-weight: 600; letter-spacing: 0.16em; fill: var(--text); }
+  .seal__star { fill: var(--accent); font-size: 10px; }
+  .seal__core {
+    width: 54%; aspect-ratio: 1; border-radius: 50%;
+    display: grid; place-content: center; justify-items: center; gap: 0.1875rem;
+    color: #2a1407;
+    background: radial-gradient(circle at 34% 28%, #ffe0b4 0%, #f8ae6a 30%, var(--primary) 58%, #a94c1b 100%);
+    box-shadow:
+      inset 0 -8px 1rem rgb(110 40 8 / 0.45),
+      inset 0 0.1875rem 0.5rem rgb(255 238 210 / 0.6),
+      0 0 1.625rem rgb(var(--ember) / 0.6),
+      0 0 5.625rem rgb(var(--ember) / 0.32);
+    animation: ember-pulse 3.6s ease-in-out infinite;
+    transition: transform 0.7s var(--ease-out);
+  }
+  .seal__num { display: flex; align-items: flex-start; font-size: calc(var(--size) * 0.215); line-height: 0.82; letter-spacing: -0.02em; }
+  .seal__pct { font-size: 0.48em; margin: 0.12em 0 0 1px; }
+  .seal__sub { font-size: max(0.5625rem, calc(var(--size) * 0.06)); font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.75; }
+  .seal:is(:hover, :focus-visible) .seal__ring { transform: rotate(140deg); }
+  .seal:is(:hover, :focus-visible)::before { transform: rotate(-90deg) scale(1.04); border-color: rgb(var(--gold) / 0.6); }
+  .seal:is(:hover, :focus-visible) .seal__core { transform: scale(1.08); }
+  .seal:focus-visible { outline-offset: 0.375rem; border-radius: 50%; }
+  @keyframes seal-spin { to { transform: rotate(360deg); } }
+  @keyframes ember-pulse {
+    50% {
+      box-shadow:
+        inset 0 -8px 1rem rgb(110 40 8 / 0.4),
+        inset 0 0.1875rem 0.625rem rgb(255 238 210 / 0.75),
+        0 0 2.5rem rgb(var(--ember) / 0.85),
+        0 0 7.5rem rgb(var(--ember) / 0.45);
+    }
+  }
+
+  /* ---------- Entrada ---------- */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__media :global(.hero__photo img) { animation: hero-zoom 2.8s var(--ease-out) backwards; }
+    .display .line { animation: hero-rise 1.1s var(--ease-out) backwards; animation-delay: calc(0.12s + var(--l) * 0.13s); }
+    .chip { animation: hero-fade 0.9s var(--ease-out) 0.5s backwards; }
+    .hero__intro { animation: hero-fade 0.9s var(--ease-out) 0.62s backwards; }
+    .hero__side .btn { animation: hero-fade 0.9s var(--ease-out) 0.74s backwards; }
+    .widget { animation: hero-rise 1s var(--ease-out) 0.8s backwards; }
+    .seal { animation: seal-in 1.3s var(--ease-out) 1s backwards; }
+  }
+  @keyframes hero-zoom { from { transform: scale(1.12); } }
+  @keyframes hero-rise { from { opacity: 0; transform: translateY(2.25rem); filter: blur(0.5rem); } }
+  @keyframes hero-fade { from { opacity: 0; transform: translateY(0.875rem); } }
+  @keyframes seal-in { from { opacity: 0; transform: scale(0.55) rotate(-50deg); } }
+
+  /* Portátiles pequeños: el formulario se compacta para no partir el botón */
+  @media (min-width: 981px) and (max-width: 1180px) {
+    .widget__field { padding: 0.625rem 1.125rem; }
+    .widget__field input, .widget__field select { min-width: 8.5rem; }
+  }
+
+  @media (max-width: 980px) {
+    .hero__top { display: flex; flex-direction: column; align-items: stretch; gap: 1.25rem; }
+    .hero__side { display: contents; }
+    .hero__side .chip { order: -1; align-self: flex-start; }
+    .hero__side .btn { display: none; }
+    .widget { align-self: stretch; display: grid; grid-template-columns: 1fr 1fr; padding: 0.875rem 1rem 1rem; gap: 0.75rem 1rem; }
+    .widget__field { padding: 0; border-right: 0; }
+    .widget__field input, .widget__field select { min-width: 0; width: 100%; min-height: 2.5rem; }
+    .widget__field:nth-child(3) { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 0.75rem; }
+    .widget .btn { grid-column: 1 / -1; margin-left: 0; }
+    .hero__actions { justify-content: flex-end; margin-top: -0.25rem; }
+    .seal { --size: 8rem; }
+    .seal__sub { display: none; }
+    .seal__ring text { font-size: 13.5px; letter-spacing: 0.12em; }
+  }
+
+  /* Móviles muy estrechos (≤ 374 px): las fechas no caben de dos en dos */
+  @media (max-width: 374px) {
+    .widget { grid-template-columns: 1fr; }
+    .widget__field:nth-child(2) { border-top: 1px solid var(--line); padding-top: 0.75rem; }
+  }
+
+  /* Tablets en vertical: texto a una medida cómoda y los tres campos en una fila */
+  @media (min-width: 600px) and (max-width: 980px) {
+    .hero__intro { max-width: 34rem; }
+    .widget { grid-template-columns: repeat(3, 1fr); }
+    .widget__field:nth-child(3) { grid-column: auto; border-top: 0; padding-top: 0; }
+  }
+</style>

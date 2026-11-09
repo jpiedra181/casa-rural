@@ -1,0 +1,60 @@
+---
+import '@fontsource/instrument-serif/latin-400.css';
+import '@fontsource/instrument-serif/latin-400-italic.css';
+import '@fontsource-variable/dm-sans/index.css';
+import '../styles/global.css';
+import { useT, type Lang } from '../i18n/ui';
+import { site } from '../data/site';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useT(lang);
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const altLang: Lang = lang === 'es' ? 'en' : 'es';
+const altPath = lang === 'es' ? '/en/' : '/';
+const ogImage = new URL('/og.jpg', Astro.site);
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'LodgingBusiness',
+  name: site.name,
+  description: t.meta.description,
+  telephone: site.phone,
+  email: site.email,
+  address: { '@type': 'PostalAddress', streetAddress: site.address, addressRegion: 'Segovia', addressCountry: 'ES' },
+  url: canonical.href,
+  numberOfRooms: 5,
+  petsAllowed: true,
+};
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{t.meta.title}</title>
+    <meta name="description" content={t.meta.description} />
+    <meta name="theme-color" content="#15110E" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={lang} href={canonical} />
+    <link rel="alternate" hreflang={altLang} href={new URL(altPath, Astro.site)} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={t.meta.title} />
+    <meta property="og:description" content={t.meta.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={lang === 'es' ? 'es_ES' : 'en_GB'} />
+    <!-- Demo: que no la indexen buscadores -->
+    <meta name="robots" content="noindex, nofollow" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">{t.skip}</a>
+    <slot />
+    <script>
+      import '../scripts/fx.ts';
+    </script>
+  </body>
+</html>

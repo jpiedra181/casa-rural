@@ -1,0 +1,51 @@
+---
+import Photo from './Photo.astro';
+import { useT, type Lang } from '../i18n/ui';
+interface Props { lang: Lang }
+const t = useT(Astro.props.lang);
+---
+
+<section id="la-casa" class="section" aria-labelledby="house-title">
+  <div class="wrap house">
+    <Photo name="salon" alt={t.house.imgAlt} variant="arch" sizes="(max-width: 860px) 90vw, 480px" widths={[400, 600, 800, 960]} class="house__photo" pendingLabel={t.photoPending} live reveal />
+    <div class="house__text stack" style="--gap:1.75rem">
+      <p class="label" data-reveal>{t.house.label}</p>
+      <h2 id="house-title" class="h2" data-reveal style="--i:1">{t.house.titleA}<br /><em>{t.house.titleEm}</em></h2>
+      <p class="lead" data-reveal style="--i:2">{t.house.intro}</p>
+      <dl class="specs" aria-label={t.house.specsLabel}>
+        {t.house.specs.map(([k, v], i) => (
+          <div class="specs__row" data-reveal style={`--i:${i}`}>
+            <dt>{k}</dt>
+            <span class="specs__dots" aria-hidden="true"></span>
+            <dd class="serif">{v}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>
+
+<style>
+  .house { display: grid; grid-template-columns: 30rem 1fr; gap: clamp(2.5rem, 7vw, 6rem); align-items: center; }
+  .house :global(.house__photo) { aspect-ratio: 3 / 4; box-shadow: 0 0 8.75rem rgb(var(--ember) / 0.3); }
+  .specs__row { display: flex; align-items: flex-end; gap: 0.75rem; padding-block: 0.6875rem; }
+  .specs dt { font-weight: 500; font-size: 1.0625rem; white-space: nowrap; }
+  .specs__dots { flex: 1; min-width: 1rem; border-bottom: 1.5px dotted var(--line); transform: translateY(-0.375rem); transition: border-color 0.4s; }
+  .specs dd { font-size: 1.375rem; line-height: 1; text-align: right; transition: color 0.4s; }
+  .specs__row:hover .specs__dots { border-color: rgb(var(--ember) / 0.7); }
+  .specs__row:hover dd { color: var(--accent); }
+  @media (min-width: 641px) and (max-width: 980px) {
+    .house { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 2.5rem; }
+    .specs dt { font-size: 0.9375rem; white-space: normal; }
+    .specs dd { font-size: 1.1875rem; }
+  }
+  @media (max-width: 640px) {
+    .house { grid-template-columns: 1fr; }
+    .house :global(.house__photo) { order: 1; max-height: 28.75rem; aspect-ratio: auto; height: 27.5rem; }
+    .house__text { display: contents; }
+    .specs { order: 2; }
+    .house { gap: 1.5rem; }
+    .specs dt { font-size: 0.9375rem; }
+    .specs dd { font-size: 1.1875rem; }
+  }
+</style>

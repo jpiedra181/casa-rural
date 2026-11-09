@@ -1,0 +1,201 @@
+---
+import { useT, type Lang } from '../i18n/ui';
+import { site, pricing } from '../data/site';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useT(lang);
+const a = t.availability;
+const f = t.form;
+const config = JSON.stringify({ lang, pricing, maxGuests: site.maxGuests, whatsapp: site.whatsapp, a, f, h: t.hero });
+const guests = Array.from({ length: site.maxGuests }, (_, i) => i + 1);
+const waDefault = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(f.waTextNoDates)}`;
+---
+
+<section id="disponibilidad" class="section" aria-labelledby="availability-title" data-booking data-config={config}>
+  <div class="wrap">
+    <div class="stack head" style="--gap:1.25rem" data-reveal>
+      <p class="label">{a.label}</p>
+      <h2 id="availability-title" class="h2">{a.titleA} <em>{a.titleEm}</em></h2>
+      <p class="lead">{a.intro}</p>
+    </div>
+
+    <div class="booking">
+      <!-- Calendario -->
+      <div class="card cal">
+        <div class="cal__head">
+          <button type="button" class="cal__nav" data-prev aria-label={a.prev}><span aria-hidden="true">‹</span></button>
+          <h3 id="calendar-heading" class="cal__title serif" tabindex="-1" aria-live="polite">&nbsp;</h3>
+          <button type="button" class="cal__nav" data-next aria-label={a.next}><span aria-hidden="true">›</span></button>
+        </div>
+        <p id="cal-help" class="visually-hidden">{a.keyboardHelp}</p>
+        <table class="cal__grid" role="grid" aria-labelledby="calendar-heading" aria-describedby="cal-help">
+          <thead>
+            <tr>
+              {a.weekdays.map((d, i) => (
+                <th scope="col"><abbr title={a.weekdaysLong[i]}>{d}</abbr></th>
+              ))}
+            </tr>
+          </thead>
+          <tbody data-grid></tbody>
+        </table>
+        <p class="cal__loading muted" data-loading>{a.loading}</p>
+        <ul role="list" class="legend" aria-hidden="true">
+          <li><span class="sw sw--free"></span>{a.legendFree}</li>
+          <li><span class="sw sw--booked"></span>{a.legendBooked}</li>
+          <li><span class="sw sw--sel"></span>{a.legendSelected}</li>
+        </ul>
+        <p class="demo-note muted" data-demo hidden>{a.demoNotice}</p>
+        <p class="visually-hidden" role="status" data-status></p>
+      </div>
+
+      <!-- Resumen + formulario -->
+      <div class="card sum">
+        <h3 class="sum__title serif">{a.summary}</h3>
+        <div data-summary aria-live="polite"><p class="sum__empty">{a.empty}</p></div>
+
+        <div class="form__result" data-result tabindex="-1" hidden></div>
+
+        <form name="reserva" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="form" novalidate>
+          <input type="hidden" name="form-name" value="reserva" />
+          <input type="hidden" name="checkin" />
+          <input type="hidden" name="checkout" />
+          <input type="hidden" name="total" />
+          <input type="hidden" name="idioma" value={lang} />
+          <p class="visually-hidden"><label>No rellenar: <input name="bot-field" tabindex="-1" autocomplete="off" /></label></p>
+
+          <div class="form__errors" data-errors tabindex="-1" role="alert" hidden></div>
+
+          <div class="form__grid">
+            <div class="field">
+              <label for="f-name">{f.name} <span class="req">({f.required})</span></label>
+              <input id="f-name" name="nombre" type="text" autocomplete="name" required aria-describedby="f-name-error" />
+              <p id="f-name-error" class="field__error" hidden></p>
+            </div>
+            <div class="field">
+              <label for="f-guests">{f.guests}</label>
+              <select id="f-guests" name="personas">
+                {guests.map((g) => <option value={g} selected={g === 8}>{g}</option>)}
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-phone">{f.phone}</label>
+              <input id="f-phone" name="telefono" type="tel" autocomplete="tel" inputmode="tel" aria-describedby="f-phone-error" />
+              <p id="f-phone-error" class="field__error" hidden></p>
+            </div>
+            <div class="field">
+              <label for="f-email">{f.email}</label>
+              <input id="f-email" name="email" type="email" autocomplete="email" aria-describedby="f-email-error" />
+              <p id="f-email-error" class="field__error" hidden></p>
+            </div>
+            <div class="field field--full">
+              <label for="f-message">{f.message}</label>
+              <textarea id="f-message" name="mensaje" rows="2"></textarea>
+            </div>
+            <div class="check field--full">
+              <input id="f-pet" name="mascota" type="checkbox" value="sí" />
+              <label for="f-pet">{f.pet}</label>
+            </div>
+            <div class="check field--full">
+              <input id="f-privacy" name="privacidad" type="checkbox" value="aceptada" required aria-describedby="f-privacy-error" />
+              <label for="f-privacy">{f.privacy} <span class="req">({f.required})</span></label>
+            </div>
+            <p id="f-privacy-error" class="field__error field--full" hidden></p>
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--block">{f.submit}</button>
+          <a class="btn btn--ghost btn--block" data-wa href={waDefault} target="_blank" rel="noopener">{f.whatsapp}</a>
+          <p class="form__note muted">{f.note}</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initBooking } from '../scripts/booking';
+  const root = document.querySelector<HTMLElement>('[data-booking]');
+  if (root) initBooking(root);
+</script>
+
+<style>
+  .head { max-width: 47.5rem; margin-bottom: 3rem; }
+  .booking { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(21rem, 1fr); gap: 2rem; align-items: start; }
+  .card { background: var(--surface); border-radius: var(--radius); padding: 2rem; }
+  .sum { border: 1px solid rgb(var(--ember) / 0.3); }
+
+  .cal__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .cal__title { font-size: 1.5rem; line-height: 1.1; }
+  .cal__title:focus { outline: none; }
+  .cal__nav { width: 2.75rem; height: 2.75rem; border-radius: 50%; border: 1px solid var(--line); background: transparent; font-size: 1.5rem; line-height: 1; cursor: pointer; }
+  .cal__nav:disabled { opacity: 0.3; cursor: default; }
+  .cal__grid { width: 100%; border-collapse: separate; border-spacing: 0.5rem; margin: -0.5rem; width: calc(100% + 1rem); table-layout: fixed; }
+  .cal__grid th { font-size: 0.8125rem; font-weight: 600; color: var(--muted); padding-bottom: 0.25rem; }
+  .cal__grid abbr { text-decoration: none; }
+  .cal__grid :global(td) { padding: 0; }
+  .cal__grid :global(.cal__day) {
+    width: 100%; height: 3.25rem; border: 0; border-radius: var(--radius); background: transparent;
+    font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.15s;
+  }
+  .cal__grid :global(.cal__day:hover:not([aria-disabled])) { background: var(--line); }
+  .cal__grid :global(.cal__day[aria-disabled]) { cursor: default; color: var(--muted); }
+  .cal__grid :global(.cal__day.is-booked[aria-disabled]) { text-decoration: line-through; }
+  .cal__grid :global(.cal__day.is-past) { opacity: 0.45; }
+  .cal__grid :global(.cal__day.is-range) { background: var(--line); }
+  .cal__grid :global(.cal__day.is-in), .cal__grid :global(.cal__day.is-out) {
+    background: var(--primary); color: var(--on-primary); font-weight: 700; box-shadow: 0 0 1.125rem rgb(var(--ember) / 0.45);
+  }
+  .cal__loading { font-size: 0.875rem; margin-top: 0.75rem; }
+  .legend { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1.25rem; font-size: 0.875rem; color: var(--muted); }
+  .legend li { display: flex; align-items: center; gap: 0.5rem; }
+  .sw { width: 0.875rem; height: 0.875rem; border-radius: 0.25rem; }
+  .sw--free { border: 1.5px solid var(--line); }
+  .sw--booked { background: var(--line); }
+  .sw--sel { background: var(--primary); }
+  .demo-note { font-size: 0.8125rem; margin-top: 0.75rem; }
+
+  .sum__title { font-size: 1.75rem; margin-bottom: 1rem; }
+  .sum :global(.sum__list) { display: grid; gap: 0.75rem; }
+  .sum :global(.sum__row) { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
+  .sum :global(.sum__row dd) { font-weight: 500; text-align: right; }
+  .sum :global(.sum__row.is-muted) { color: var(--muted); }
+  .sum :global(.sum__row.is-total dt) { font-weight: 600; font-size: 1.0625rem; }
+  .sum :global(.sum__total) { font-family: var(--serif); font-size: 2.25rem; line-height: 1; }
+  .sum :global(.sum__sep) { height: 1px; background: var(--line); }
+  .sum :global(.sum__save) { margin-top: 1rem; padding: 0.625rem 0.875rem; border-radius: var(--radius); background: var(--bg); color: var(--accent); font-weight: 600; font-size: 0.9375rem; }
+  .sum :global(.sum__empty) { color: var(--muted); padding: 0.5rem 0 0.25rem; }
+
+  .form { display: grid; gap: 0.875rem; margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+  .form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem 1rem; }
+  .field { display: grid; gap: 0.375rem; }
+  .field--full { grid-column: 1 / -1; }
+  .field label { font-size: 0.875rem; font-weight: 500; }
+  .req { color: var(--muted); font-weight: 400; font-size: 0.8125rem; }
+  .field input, .field select, .field textarea {
+    width: 100%; min-height: 2.875rem; padding: 0.625rem 0.875rem; border-radius: var(--radius);
+    background: var(--bg); border: 1px solid var(--line); color-scheme: dark;
+  }
+  .field textarea { resize: vertical; min-height: 4rem; }
+  .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { border-color: var(--accent); }
+  .field [aria-invalid='true'] { border-color: #ff9d8a; }
+  .field__error { color: #ffb3a5; font-size: 0.875rem; font-weight: 500; }
+  .check { display: flex; gap: 0.625rem; align-items: flex-start; font-size: 0.9375rem; }
+  .check input { width: 1.25rem; height: 1.25rem; margin-top: 2px; accent-color: var(--primary); flex-shrink: 0; }
+  .form__errors { border: 1px solid #ff9d8a; border-radius: var(--radius); padding: 0.875rem 1rem; font-size: 0.9375rem; }
+  .form__errors :global(ul) { margin: 0.375rem 0 0; padding-left: 1.125rem; }
+  .form__errors :global(a) { color: #ffb3a5; }
+  .form__note { font-size: 0.8125rem; text-align: center; }
+  .form__result { margin-top: 1.5rem; }
+  .form__result :global(.form__ok) { padding: 1rem; border-radius: var(--radius); background: var(--bg); border: 1px solid var(--accent); font-weight: 500; }
+  .form__result :global(.form__ko) { padding: 1rem; border-radius: var(--radius); border: 1px solid #ff9d8a; }
+
+  @media (max-width: 980px) {
+    .booking { grid-template-columns: 1fr; }
+    .card { padding: 1.25rem 1rem; }
+    .cal__grid { border-spacing: 0.3125rem; margin: -0.3125rem; width: calc(100% + 0.625rem); }
+    .cal__grid :global(.cal__day) { height: 2.625rem; font-size: 0.9375rem; }
+    .form__grid { grid-template-columns: 1fr; }
+  }
+  @media (min-width: 600px) and (max-width: 980px) {
+    .form__grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>

@@ -1,0 +1,40 @@
+---
+import Sparks from './Sparks.astro';
+import Icon from './Icon.astro';
+import { useT, type Lang } from '../i18n/ui';
+import { site } from '../data/site';
+interface Props { lang: Lang }
+const t = useT(Astro.props.lang);
+const fi = t.final;
+const wa = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(t.form.waTextNoDates)}`;
+---
+
+<section class="final" aria-labelledby="final-title">
+  <div class="glow final__glow flicker" aria-hidden="true"></div>
+  <Sparks count={34} seed={41} />
+  <div class="wrap final__inner">
+    <h2 id="final-title" class="final__title serif" data-reveal>{fi.titleA}<br /><em>{fi.titleEm}</em></h2>
+    <p class="lead">{fi.intro}</p>
+    <div class="final__actions">
+      <a class="btn btn--primary" href="#disponibilidad">{fi.cta}<Icon name="arrow-right" class="btn__icon btn__icon--right" /></a>
+      <a class="final__wa u-line tap" href={wa} target="_blank" rel="noopener" data-wa>{fi.whatsapp}: <span class="nowrap">{site.phone}</span></a>
+    </div>
+    <p class="coords">{site.coords}</p>
+  </div>
+</section>
+
+<style>
+  .final { position: relative; overflow: hidden; background: var(--dark); padding-block: clamp(6rem, 12vw, 10rem) clamp(4.5rem, 9vw, 7.5rem); isolation: isolate; }
+  .final__glow { z-index: -1; background: radial-gradient(55% 80% at 50% 108%, rgb(var(--ember) / 0.7), rgb(var(--ember) / 0.2) 45%, transparent 75%); }
+  .final__inner { display: grid; justify-items: center; text-align: center; gap: 2rem; position: relative; }
+  .final__title { font-size: clamp(3.5rem, 2rem + 6vw, 8rem); line-height: 0.92; letter-spacing: -0.015em; }
+  .final__title em { font-style: italic; color: var(--accent); }
+  .final__actions { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+  .final__wa { font-weight: 500; text-underline-offset: 0.25rem; }
+  .nowrap { white-space: nowrap; }
+  .coords { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  @media (max-width: 860px) {
+    .final__actions { flex-direction: column; width: 100%; }
+    .final__actions .btn { width: 100%; }
+  }
+</style>

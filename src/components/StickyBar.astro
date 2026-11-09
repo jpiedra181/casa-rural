@@ -1,0 +1,49 @@
+---
+import { useT, type Lang } from '../i18n/ui';
+import { pricing } from '../data/site';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useT(lang);
+const from = Math.min(pricing.low.weekday, ...pricing.seasons.map((s) => s.night));
+const price = new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(from);
+---
+
+<div class="sticky" data-sticky>
+  <p class="sticky__price">
+    <span class="serif sticky__amount">{t.sticky.from} {price} <em>/ {t.sticky.night}</em></span>
+    <span class="muted">{t.sticky.direct}</span>
+  </p>
+  <a class="btn btn--primary" href="#disponibilidad">{t.sticky.cta}</a>
+</div>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-sticky]');
+  const hero = document.querySelector('.hero');
+  const booking = document.getElementById('disponibilidad');
+  if (bar && hero && 'IntersectionObserver' in window) {
+    let pastHero = false;
+    let onBooking = false;
+    const sync = () => bar.classList.toggle('is-visible', pastHero && !onBooking);
+    new IntersectionObserver(([e]) => { pastHero = !e.isIntersecting; sync(); }).observe(hero);
+    if (booking) new IntersectionObserver(([e]) => { onBooking = e.isIntersecting; sync(); }, { threshold: 0.15 }).observe(booking);
+  }
+</script>
+
+<style>
+  .sticky { display: none; }
+  @media (max-width: 860px) {
+    .sticky {
+      position: fixed; inset: auto 0 0 0; z-index: 40;
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+      padding: 0.75rem 0.75rem 0.75rem 1.25rem; padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+      background: var(--surface); border-top: 1px solid rgb(var(--ember) / 0.3);
+      box-shadow: 0 -8px 1.5rem rgb(0 0 0 / 0.5);
+      transform: translateY(110%); transition: transform 0.3s ease; visibility: hidden;
+    }
+    .sticky.is-visible { transform: none; visibility: visible; }
+    .sticky__price { display: grid; font-size: 0.75rem; }
+    .sticky__amount { font-size: 1.375rem; line-height: 1.1; }
+    .sticky__amount em { color: var(--accent); }
+    .sticky .btn { min-height: 2.75rem; padding: 0.625rem 1.25rem; }
+  }
+</style>

@@ -1,0 +1,60 @@
+---
+import { useT, type Lang } from '../i18n/ui';
+import { site } from '../data/site';
+interface Props { lang: Lang }
+const t = useT(Astro.props.lang);
+const c = t.contact;
+const embed = 'https://www.google.com/maps?q=Palazuelos%20de%20Eresma%2C%20Segovia&z=12&output=embed';
+---
+
+<section id="como-llegar" class="section section--surface" aria-labelledby="contact-title">
+  <div class="wrap contact">
+    <div class="stack" style="--gap:1.25rem" data-reveal>
+      <p class="label">{c.label}</p>
+      <h2 id="contact-title" class="h2">{c.titleA} <em>{c.titleEm}</em></h2>
+      <dl class="info">
+        <div><dt>{c.address}</dt><dd>{site.address}</dd></div>
+        <div><dt>{c.phone}</dt><dd><a href={`tel:+${site.whatsapp}`}>{site.phone}</a></dd></div>
+        <div><dt>{c.email}</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
+        <div><dt>{c.registry}</dt><dd>{site.registry} {c.example}</dd></div>
+      </dl>
+    </div>
+    <div class="map" data-map={embed}>
+      <div class="map__cover">
+        <button type="button" class="btn btn--ghost" data-map-load>{c.map}</button>
+        <p class="muted">{c.mapNote}</p>
+        <a class="link-accent tap" href={site.mapsUrl} target="_blank" rel="noopener">Google Maps ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelector('[data-map-load]')?.addEventListener('click', () => {
+    const box = document.querySelector<HTMLElement>('[data-map]');
+    if (!box) return;
+    const iframe = document.createElement('iframe');
+    iframe.src = box.dataset.map!;
+    iframe.title = 'Google Maps';
+    iframe.loading = 'lazy';
+    iframe.referrerPolicy = 'no-referrer-when-downgrade';
+    box.replaceChildren(iframe);
+    iframe.focus();
+  });
+</script>
+
+<style>
+  .contact { display: grid; grid-template-columns: 30rem 1fr; gap: 4rem; align-items: center; }
+  .info { display: grid; gap: 1.25rem; margin-top: 0.75rem; }
+  .info dt { font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.04em; color: var(--muted); }
+  .info dd { font-size: 1.125rem; font-weight: 500; }
+  .info a { text-decoration: none; }
+  .info a:hover { color: var(--accent); }
+  .map { height: 27.5rem; border-radius: var(--radius); overflow: hidden; background: var(--placeholder); }
+  .map :global(iframe) { width: 100%; height: 100%; border: 0; filter: grayscale(0.3) contrast(1.05); }
+  .map__cover { height: 100%; display: grid; place-content: center; justify-items: center; gap: 0.875rem; padding: 1.5rem; text-align: center; font-size: 0.875rem; max-width: 23.75rem; margin: auto; }
+  @media (max-width: 860px) {
+    .contact { grid-template-columns: 1fr; gap: 2rem; }
+    .map { height: 16.25rem; }
+  }
+</style>

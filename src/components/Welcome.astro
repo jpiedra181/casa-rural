@@ -1,0 +1,72 @@
+---
+import { useT, type Lang } from '../i18n/ui';
+import { site } from '../data/site';
+interface Props { lang: Lang }
+const t = useT(Astro.props.lang);
+// "4,9" · "24 h" · "−15 %" · "1890" → prefijo + número animable + sufijo. Los años cuentan hacia atrás.
+const year = new Date().getFullYear();
+const trust = t.trust.map((d) => {
+  const m = d.big.match(/^(\D*)(\d+(?:[.,]\d+)?)(.*)$/);
+  if (!m) return { ...d, count: null };
+  const [, pre, num, post] = m;
+  const to = Number(num.replace(',', '.'));
+  return { ...d, count: { pre, num, post, to, from: to >= 1000 ? year : 0, dec: (num.split(/[.,]/)[1] ?? '').length, sep: num.includes(',') ? ',' : '.' } };
+});
+---
+
+<section class="section welcome" aria-labelledby="welcome-label">
+  <div class="glow welcome__glow" aria-hidden="true"></div>
+  <div class="wrap welcome__grid">
+    <h2 id="welcome-label" class="label">{t.welcome.label}</h2>
+    <figure class="welcome__note" data-reveal>
+      <blockquote class="quote serif">
+        <p>{t.welcome.quoteA}<em>{t.welcome.quoteEm}</em>{t.welcome.quoteB}</p>
+      </blockquote>
+      <figcaption class="sign">
+        <span class="sign__name serif">{site.hosts}</span>
+        <span class="sign__rule" aria-hidden="true"></span>
+        <span class="muted">{t.welcome.role}</span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="trust" aria-label="La Casa del Pinar en cifras">
+  <ul role="list" class="wrap trust__list">
+    {trust.map((d, i) => (
+      <li class="trust__item" data-reveal style={`--i:${i}`}>
+        {d.count ? (
+          <span class="trust__big serif">{d.count.pre}<span data-count data-from={d.count.from} data-to={d.count.to} data-dec={d.count.dec} data-sep={d.count.sep}>{d.count.num}</span>{d.count.post}</span>
+        ) : (
+          <span class="trust__big serif">{d.big}</span>
+        )}
+        <span class="trust__small muted">{d.small}</span>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .welcome__glow { background: radial-gradient(35% 60% at 0% 40%, rgb(var(--ember) / 0.12), transparent 70%); }
+  .welcome__grid { display: grid; grid-template-columns: 17.5rem 1fr; gap: clamp(1.5rem, 6vw, 6rem); position: relative; }
+  .quote { font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.75rem); line-height: 1.18; }
+  .sign { display: flex; align-items: center; gap: 1.125rem; margin-top: 2rem; flex-wrap: wrap; }
+  .sign__name { font-style: italic; color: var(--accent); font-size: clamp(1.75rem, 1.5rem + 0.8vw, 2.25rem); }
+  .sign__rule { width: 2.5rem; height: 1px; background: var(--line); }
+  .trust { padding-bottom: 0.5rem; }
+  .trust__list { display: grid; grid-template-columns: repeat(4, 1fr); border-block: 1px solid var(--line); }
+  .trust__item { display: grid; gap: 0.5rem; padding: 2.5rem 1.5rem 2.5rem 2rem; }
+  .trust__item:first-child { padding-left: 0; }
+  .trust__item + .trust__item { border-left: 1px solid var(--line); }
+  .trust__big { font-size: clamp(2.5rem, 2rem + 1.5vw, 3.75rem); line-height: 1; font-variant-numeric: tabular-nums; transition: color 0.4s; }
+  .trust__item { transition: background-color 0.5s; }
+  .trust__item:hover .trust__big { color: var(--accent); }
+  .trust__small { font-size: 0.875rem; }
+  @media (max-width: 860px) {
+    .welcome__grid { grid-template-columns: 1fr; }
+    .trust__list { grid-template-columns: 1fr 1fr; }
+    .trust__item { padding: 1.375rem 0.75rem 1.375rem 1rem; }
+    .trust__item:nth-child(odd) { padding-left: 0; border-left: 0; }
+    .trust__item:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  }
+</style>
