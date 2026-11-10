@@ -2,8 +2,8 @@
 
 export const site = {
   name: 'La Casa del Pinar',
-  phone: '600 000 000',
-  whatsapp: '34600000000', // formato internacional, sin "+" ni espacios
+  phone: '670963515',
+  whatsapp: '34670963515', // formato internacional, sin "+" ni espacios
   email: 'hola@ejemplo.com',
   address: 'Calle del Pinar, 1 · Sierra de Guadarrama (Segovia)',
   registry: 'CR-40/0000',

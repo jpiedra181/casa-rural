@@ -184,10 +184,11 @@ const es = {
     },
     errorSummary: 'Revisa estos campos:',
     sending: 'Enviando…',
-    success: '¡Solicitud enviada! Te escribimos en menos de 24 h para confirmar.',
+    success:
+      '¡Solicitud enviada! Así funciona: en la web real, la solicitud le llega al dueño al momento por email, con las fechas, el precio y los datos del cliente. Como esto es una demo, me ha llegado a mí, Javier, y te responderé igualmente.',
     failure: 'No hemos podido enviar la solicitud. Escríbenos por WhatsApp y lo vemos al momento.',
-    waText: 'Hola, me interesa La Casa del Pinar del {in} al {out} para {g} personas. ¿Está disponible?',
-    waTextNoDates: 'Hola, me interesa reservar La Casa del Pinar. ¿Me podéis informar?',
+    waText: '[Demo] Hola, me interesa La Casa del Pinar del {in} al {out} para {g} personas. ¿Está disponible?',
+    waTextNoDates: '[Demo] Hola, me interesa reservar La Casa del Pinar. ¿Me podéis informar?',
   },
   direct: {
     label: '05 — Reservar directo',
@@ -459,10 +460,11 @@ const en: Dict = {
     },
     errorSummary: 'Please check these fields:',
     sending: 'Sending…',
-    success: 'Request sent! We’ll write back within 24 h to confirm.',
+    success:
+      'Request sent! This is how it works: on the real website, the request reaches the owner instantly by email, with the dates, the price and the guest’s details. As this is a demo, it has come to me, Javier, and I’ll still reply.',
     failure: 'We couldn’t send your request. Message us on WhatsApp and we’ll sort it out right away.',
-    waText: 'Hi, I’m interested in La Casa del Pinar from {in} to {out} for {g} guests. Is it available?',
-    waTextNoDates: 'Hi, I’d like to book La Casa del Pinar. Could you give me some information?',
+    waText: '[Demo] Hi, I’m interested in La Casa del Pinar from {in} to {out} for {g} guests. Is it available?',
+    waTextNoDates: '[Demo] Hi, I’d like to book La Casa del Pinar. Could you give me some information?',
   },
   direct: {
     label: '05 — Book direct',

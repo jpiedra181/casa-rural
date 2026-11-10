@@ -44,6 +44,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 /* Todo el diseño va en rem: hasta ~1680 px de ancho 1rem = 16px (respetando el tamaño de letra
    del usuario); a partir de ahí la página escala en proporción hasta ×1,75 en 4K.
    Se usa el menor de ancho y alto (en 16:9) para que los monitores ultrapanorámicos no se pasen. */
